@@ -1,39 +1,44 @@
 def generate_query(requests, schema):
-    query = []
-    for request in requests:
-        # TODO validate request
-        predicate_schema = request['predicate']
-        
-        source = schema[predicate_schema]['source']
-        target = schema[predicate_schema]['target']
-        
-        source_node = request['source']
+    # TODO validate request
+    predicates = requests['predicates']
+    nodes = requests['nodes']
 
-        if source_node['id'].startswith("$"):
-            match = "MATCH (source: {} {{id: $id,".format(source)
-        else:
-            match = "MATCH (source: {} {{".format(source)
-        for property, value in request['source']['properties'].items():
+    node_map = {node['node_id']: node for node in nodes}
+
+    query = "MATCH"
+    for predicate in predicates:
+        relationship = predicate['type'].replace(' ', '_')
+        source = predicate['source']
+        target= predicate['target']
+
+        
+        source_node = node_map[source]
+
+        node_type = source_node["type"]
+        node_id = source_node["node_id"]
+        query += " " + f"({node_id}: {node_type} {{"
+        for property, value in source_node['properties'].items():
             if isinstance(value, str):
-                match += " " + f"{property}: '{value}',"
+                query += " " + f"{property}: '{value}',"
             elif isinstance(value, int):
-                match += " " + f"{property}: {value},"
-        match = match.rstrip(', ') + "})\n"
-
-        match += "MATCH (target: {} {{".format(target)
-        for property, value in request['target']['properties'].items():
-            if isinstance(value, str):
-                match += " " + f"{property}: '{value}',"
-            elif isinstance(value, int):
-                match += " " + f"{property}: {value}"        
-        match = match.rstrip(', ') + "})\n"
+                query += " " + f"{property}: {value},"
+        query = query.rstrip(', ') + "}),"
         
-        predicate = request['predicate'].replace(" ", "_")
+        target_node = node_map[target]
 
-        match += f"""MATCH (source)-[predicate:{predicate}]->(target)\nRETURN*"""
+        node_type = target_node["type"]
+        node_id = target_node["node_id"]
+        query += " " + f"({node_id}: {node_type} {{"
+        for property, value in target_node['properties'].items():
+            if isinstance(value, str):
+                query += " " + f"{property}: '{value}',"
+            elif isinstance(value, int):
+                query += " " + f"{property}: {value},"
+        query = query.rstrip(', ') + "}),"
 
-        match = match.strip(' ')
-
-        query.append(match)
+        query += " " + f"({source})-[:{relationship}]->({target}),"
+        query = query.strip(' ')
+    query = query.rstrip(', ')
+    query += " RETURN *"
     return query
 

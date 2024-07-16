@@ -39,16 +39,16 @@ def execute_queries(tx, queries):
     return results
 
 def load_data():
-    uri = "bolt://localhost:7687"
+    uri = "neo4j+s://2838a353.databases.neo4j.io"
     user = "neo4j"
-    password = "2020lifestar$"
+    password = "_xmUcjpnF0ZKDOVeRY6dSZ_tfFGLDvW8mDVF0eC1p6w" 
     
     driver = GraphDatabase.driver(uri, auth=(user, password))
 
-    queries = read_queries_from_file('./data/data.cypher')
+#    queries = read_queries_from_file('./data/data.cypher')
 
-    with driver.session(database="neo4j") as session:
-        session.write_transaction(execute_queries, queries)
+#    with driver.session(database="neo4j") as session:
+ #       session.write_transaction(execute_queries, queries)
 
     return driver
 
@@ -73,7 +73,8 @@ def process_query():
             #print(response)
     print(queries) 
     with driver.session(database="neo4j") as session:
-        response = session.read_transaction(execute_queries, queries)
+        response = session.run(queries)
+        response = response.data()
     return jsonify({"Result": response})
 
 if __name__ == "__main__":
