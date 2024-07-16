@@ -9,8 +9,8 @@ curl --location 'http://127.0.0.1:5000/query' \
         "type": "gene",
         "properties": {
           "gene_type": "protein_coding",
-          "start": "9537370",
-          "end": "9839076"
+          "start": 9537370,
+          "end": 9839076
         }
       },
       {
@@ -18,7 +18,21 @@ curl --location 'http://127.0.0.1:5000/query' \
         "id": "",
         "type": "transcript",
         "properties": {}
+      },
+      {
+	"node_id": "n3",
+        "id": "",
+        "type": "gene",
+        "properties": {
+        }
       }
-    ]
+    ],
+    "predicates": [
+      {
+        "type": "transcribed to",
+        "source": "n1",
+        "target": "n2"
+      }
+   ]
   }
 }'
